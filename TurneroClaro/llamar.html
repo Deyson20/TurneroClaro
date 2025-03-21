@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llamar Turno</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Logo de Claro -->
+        <div class="logo-container">
+            <img src="images/logo-claro.png" alt="Logo Claro Colombia" class="logo">
+        </div>
+
+        <h1 id="turno-message"></h1>
+        <button onclick="location.href='turnos.html'">Volver a la Lista de Turnos</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const turnoActual = JSON.parse(localStorage.getItem('turnoActual')); // Obtiene el turno actual
+
+            const getTurnoSufijo = (turnNumber) => {
+                if (turnNumber === 1) return '1er';
+                if (turnNumber === 2) return '2do';
+                if (turnNumber === 3) return '3er';
+                return `${turnNumber}to`; // Para turnos 4to, 5to, etc.
+            };
+
+            const message = turnoActual 
+                ? `${getTurnoSufijo(turnoActual.turnNumber)} TURNO: ${turnoActual.name}` 
+                : 'No hay turnos en este momento';
+            document.getElementById('turno-message').textContent = message;
+        });
+
+        // Escucha cambios en tiempo real en localStorage
+        window.addEventListener('storage', () => {
+            const turnoActual = JSON.parse(localStorage.getItem('turnoActual'));
+
+            const getTurnoSufijo = (turnNumber) => {
+                if (turnNumber === 1) return '1er';
+                if (turnNumber === 2) return '2do';
+                if (turnNumber === 3) return '3er';
+                return `${turnNumber}to`; // Para turnos 4to, 5to, etc.
+            };
+
+            const message = turnoActual 
+                ? `${getTurnoSufijo(turnoActual.turnNumber)} TURNO: ${turnoActual.name}` 
+                : 'No hay turnos en este momento';
+            document.getElementById('turno-message').textContent = message;
+        });
+    </script>
+</body>
+</html>
