@@ -6,33 +6,39 @@
     <title>Lista de Turnos</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* Estilo para alinear los botones verticalmente */
+        /* Estilo para alinear los turnos y botones */
         .queue-list li {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            justify-content: space-between; /* Espacia el contenido y los botones */
+            align-items: center; /* Centra verticalmente el contenido */
             margin-bottom: 10px;
-        }
-
-        .queue-list .buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .queue-list button {
-            margin-left: 10px;
-        }
-
-        /* Estilo para la caja que encierra los nombres de los turnos */
-        .turno-box {
-            border: 1px solid #ccc;
             padding: 10px;
-            margin: 10px 0;
+            border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #f9f9f9;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 100%; /* Ocupa todo el ancho del contenedor */
-            box-sizing: border-box; /* Incluye el padding y el borde en el ancho total */
+        }
+
+        .turno-content {
+            display: flex;
+            flex-direction: column; /* Muestra el nombre y puesto en columnas */
+        }
+
+        .puesto {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px; /* Espaciado entre botones */
+        }
+
+        .queue-list button {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -59,78 +65,6 @@
         <button onclick="location.href='index.html'">Volver a Agregar Turnos</button>
     </div>
     <script>
-        // Lógica para eliminar todos los turnos
-        document.getElementById('delete-all').addEventListener('click', () => {
-            if (confirm('¿Estás seguro de que deseas eliminar todos los turnos?')) {
-                localStorage.removeItem('turnos'); // Elimina todos los turnos del almacenamiento local
-                location.reload(); // Recarga la página para actualizar la lista
-            }
-        });
-
-        // Lógica para guardar la lista de turnos en un archivo con selección de carpeta
-        document.getElementById('save-turnos').addEventListener('click', async () => {
-            const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
-
-            try {
-                // Usar el File System Access API para abrir el cuadro de diálogo de guardar archivo
-                const fileHandle = await window.showSaveFilePicker({
-                    suggestedName: 'turnos.json',
-                    types: [
-                        {
-                            description: 'Archivo JSON',
-                            accept: { 'application/json': ['.json'] },
-                        },
-                    ],
-                });
-
-                // Crear un archivo y escribir los datos
-                const writableStream = await fileHandle.createWritable();
-                await writableStream.write(JSON.stringify(turnos, null, 2));
-                await writableStream.close();
-
-                alert('Lista de turnos guardada correctamente.');
-            } catch (error) {
-                console.error('Error al guardar el archivo:', error);
-                alert('No se pudo guardar el archivo. Asegúrate de que tu navegador sea compatible.');
-            }
-        });
-
-        // Lógica para restaurar la lista de turnos desde un archivo
-        document.getElementById('restore-turnos-btn').addEventListener('click', () => {
-            document.getElementById('restore-turnos').click();
-        });
-
-        document.getElementById('restore-turnos').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const turnos = JSON.parse(e.target.result);
-                        localStorage.setItem('turnos', JSON.stringify(turnos));
-                        location.reload(); // Recarga la página para actualizar la lista
-                    } catch (error) {
-                        alert('Error al cargar el archivo. Asegúrate de que sea un archivo JSON válido.');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        });
-
-        // Lógica para el botón "Ver Turno"
-        document.getElementById('view-turno').addEventListener('click', () => {
-            const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
-            if (turnos.length === 0) {
-                alert('No hay turnos disponibles para ver.');
-                return;
-            }
-
-            // Guarda el primer turno en localStorage y abre llamar-copia.html en una nueva pestaña
-            localStorage.setItem('turnoActual', JSON.stringify({ turnNumber: 1, name: turnos[0].name }));
-            window.open('llamar-copia.html', '_blank'); // Abre llamar-copia.html en una nueva pestaña
-        });
-
-        // Lógica para cargar y eliminar turnos individuales
         document.addEventListener('DOMContentLoaded', () => {
             const turnoList = document.getElementById('queue-list');
             const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
@@ -141,8 +75,23 @@
             turnos.forEach((turno, index) => {
                 const li = document.createElement('li');
                 li.classList.add('turno-box'); // Agrega la clase para el estilo de la caja
-                li.textContent = `Turno ${index + 1}: ${turno.name}`;
-                
+
+                // Contenedor para el nombre y puesto
+                const contentContainer = document.createElement('div');
+                contentContainer.classList.add('turno-content');
+
+                // Nombre del turno
+                const nameElement = document.createElement('div');
+                nameElement.textContent = `Turno ${index + 1}: ${turno.name}`;
+
+                // Puesto del turno
+                const puestoElement = document.createElement('div');
+                puestoElement.classList.add('puesto');
+                puestoElement.textContent = `Puesto: ${turno.puesto}`;
+
+                contentContainer.appendChild(nameElement);
+                contentContainer.appendChild(puestoElement);
+
                 // Contenedor para los botones
                 const buttonContainer = document.createElement('div');
                 buttonContainer.classList.add('buttons');
@@ -156,28 +105,89 @@
                     }
                 };
 
-                // Botón para llamar un turno
-                const callButton = document.createElement('button');
-                callButton.textContent = 'Llamar Turno';
-                callButton.onclick = () => {
-                    localStorage.setItem('turnoActual', JSON.stringify({ turnNumber: index + 1, name: turno.name })); // Guarda el turno actual en localStorage
-                    window.open('llamar.html', '_blank'); // Abre llamar.html en una nueva pestaña
-                };
-
                 buttonContainer.appendChild(deleteButton);
+
+                // Agrega el contenido y los botones al elemento de la lista
+                li.appendChild(contentContainer);
                 li.appendChild(buttonContainer);
                 turnoList.appendChild(li);
+            });
+
+            // Lógica para el botón "Eliminar Todos los Turnos"
+            document.getElementById('delete-all').addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que deseas eliminar todos los turnos?')) {
+                    localStorage.removeItem('turnos'); // Elimina todos los turnos del almacenamiento local
+                    location.reload(); // Recarga la página para actualizar la lista
+                }
+            });
+
+            // Lógica para el botón "Guardar Lista de Turnos"
+            document.getElementById('save-turnos').addEventListener('click', async () => {
+                const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+
+                try {
+                    // Usar el File System Access API para abrir el cuadro de diálogo de guardar archivo
+                    const fileHandle = await window.showSaveFilePicker({
+                        suggestedName: 'turnos.json',
+                        types: [
+                            {
+                                description: 'Archivo JSON',
+                                accept: { 'application/json': ['.json'] },
+                            },
+                        ],
+                    });
+
+                    // Crear un archivo y escribir los datos
+                    const writableStream = await fileHandle.createWritable();
+                    await writableStream.write(JSON.stringify(turnos, null, 2));
+                    await writableStream.close();
+
+                    alert('Lista de turnos guardada correctamente.');
+                } catch (error) {
+                    console.error('Error al guardar el archivo:', error);
+                    alert('No se pudo guardar el archivo. Asegúrate de que tu navegador sea compatible.');
+                }
+            });
+
+            // Lógica para el botón "Restaurar Lista de Turnos"
+            document.getElementById('restore-turnos-btn').addEventListener('click', () => {
+                document.getElementById('restore-turnos').click();
+            });
+
+            document.getElementById('restore-turnos').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const turnos = JSON.parse(e.target.result);
+                            localStorage.setItem('turnos', JSON.stringify(turnos));
+                            location.reload(); // Recarga la página para actualizar la lista
+                        } catch (error) {
+                            alert('Error al cargar el archivo. Asegúrate de que sea un archivo JSON válido.');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            // Lógica para el botón "Ver Turno"
+            document.getElementById('view-turno').addEventListener('click', () => {
+                const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+                if (turnos.length === 0) {
+                    alert('No hay turnos disponibles para ver.');
+                    return;
+                }
+
+                // Guarda el primer turno en localStorage y redirige a llamar-copia.html
+                localStorage.setItem('turnoActual', JSON.stringify(turnos[0]));
+                window.location.href = 'llamar-copia.html'; // Redirige a la página llamar-copia.html
             });
 
             function eliminarTurno(index) {
                 turnos.splice(index, 1);
                 localStorage.setItem('turnos', JSON.stringify(turnos));
                 location.reload(); // Recarga la página para actualizar la lista
-            }
-
-            function llamarTurno(turnNumber, name) {
-                localStorage.setItem('turnoActual', JSON.stringify({ turnNumber, name })); // Guarda el turno actual en localStorage
-                window.location.href = 'llamar.html'; // Redirige a la página de llamar turno
             }
         });
     </script>

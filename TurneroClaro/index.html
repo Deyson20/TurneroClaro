@@ -14,10 +14,26 @@
         <h1>Sistema de Turnos</h1>
         <form id="turn-form">
             <input type="text" id="name" placeholder="Nombre" required>
+            <input type="text" id="puesto" placeholder="Puesto" required> <!-- Nuevo cuadro de texto -->
             <button type="submit">Agregar Turno</button>
         </form>
         <button onclick="location.href='turnos.html'">Ver Lista de Turnos</button>
     </div>
-    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('turn-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const puesto = document.getElementById('puesto').value.trim(); // Obtiene el valor del puesto
+            if (!name || !puesto) return alert('Por favor, completa todos los campos.');
+
+            const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+            turnos.push({ name, puesto }); // Guarda el nombre y el puesto
+            localStorage.setItem('turnos', JSON.stringify(turnos));
+
+            document.getElementById('name').value = '';
+            document.getElementById('puesto').value = ''; // Limpia el campo de puesto
+            alert('Turno agregado correctamente.');
+        });
+    </script>
 </body>
 </html>

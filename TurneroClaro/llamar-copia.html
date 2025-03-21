@@ -6,15 +6,14 @@
     <title>Llamar Turno - Copia</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* Centrar el contenido de la página */
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Ocupa toda la altura de la ventana */
-            margin: 0; /* Elimina el margen predeterminado del body */
+            height: 100vh;
+            margin: 0;
             text-align: center;
-            background-color: #f9f9f9; /* Fondo claro opcional */
+            background-color: #f9f9f9;
         }
 
         .container {
@@ -24,77 +23,71 @@
         }
 
         .logo-container img {
-            max-width: 200px; /* Ajusta el tamaño del logo */
-            margin-bottom: 30px; /* Espaciado entre el logo y el texto */
+            max-width: 200px;
+            margin-bottom: 30px;
         }
 
-        h1 {
-            font-size: 3rem; /* Tamaño más grande para el texto */
+        .turno-message {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .nombre-message {
+            font-size: 2rem; /* Ajusta el tamaño del texto del nombre */
+            font-weight: bold;
+            margin-bottom: 10px;
+            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+        }
+
+        .puesto-message {
+            font-size: 2rem; /* Tamaño del texto del puesto */
             font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Logo de Claro -->
         <div class="logo-container">
             <img src="images/logo-claro.png" alt="Logo Claro Colombia" class="logo">
         </div>
 
-        <h1 id="turno-message"></h1>
+        <div id="turno-message" class="turno-message"></div>
+        <div id="nombre-message" class="nombre-message"></div>
+        <div id="puesto-message" class="puesto-message"></div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
-            let currentIndex = parseInt(localStorage.getItem('currentIndex')) || 0; // Recupera el índice actual desde localStorage
-
-            const getTurnoSufijo = (turnNumber) => {
-                if (turnNumber === 1) return '1er';
-                if (turnNumber === 2) return '2do';
-                if (turnNumber === 3) return '3er';
-                return `${turnNumber}to`;
-            };
+            let currentIndex = parseInt(localStorage.getItem('currentIndex')) || 0;
 
             const updateMessage = () => {
                 if (turnos.length === 0) {
-                    document.getElementById('turno-message').textContent = 'No hay turnos en este momento';
+                    document.getElementById('turno-message').textContent = 'NO HAY TURNOS EN ESTE MOMENTO';
+                    document.getElementById('nombre-message').textContent = '';
+                    document.getElementById('puesto-message').textContent = '';
                     return;
                 }
 
                 const turnoActual = turnos[currentIndex];
-                const message = `${getTurnoSufijo(currentIndex + 1)} TURNO: ${turnoActual.name}`;
-                document.getElementById('turno-message').textContent = message;
-
-                // Guarda el índice actual en localStorage
+                document.getElementById('turno-message').textContent = `TURNO: ${currentIndex + 1}`;
+                document.getElementById('nombre-message').textContent = turnoActual.name.toUpperCase();
+                document.getElementById('puesto-message').textContent = turnoActual.puesto.toUpperCase();
                 localStorage.setItem('currentIndex', currentIndex);
             };
 
-            // Navegación con el teclado
             document.addEventListener('keydown', (event) => {
                 if (turnos.length === 0) return;
 
                 if (event.key === 'ArrowLeft') {
-                    // Flecha izquierda: turno anterior
                     currentIndex = (currentIndex - 1 + turnos.length) % turnos.length;
                     updateMessage();
                 } else if (event.key === 'ArrowRight') {
-                    // Flecha derecha: siguiente turno
                     currentIndex = (currentIndex + 1) % turnos.length;
                     updateMessage();
                 }
             });
 
-            // Escucha cambios en localStorage
-            window.addEventListener('storage', () => {
-                const updatedTurnos = JSON.parse(localStorage.getItem('turnos')) || [];
-                if (updatedTurnos.length !== turnos.length) {
-                    turnos.length = 0; // Vacía el array actual
-                    turnos.push(...updatedTurnos); // Actualiza con los nuevos turnos
-                    updateMessage(); // Actualiza el mensaje
-                }
-            });
-
-            // Actualiza el mensaje al cargar la página
             updateMessage();
         });
     </script>
